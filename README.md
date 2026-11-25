@@ -301,22 +301,6 @@ I created a custom rule in Wazuh's `local_rules.xml` configuration file.
 | Source correlation | Same source IP |
 | MITRE ATT&CK | T1110 – Brute Force |
 
-**Custom detection rule:**
-
-```xml
-<group name="local,syslog,sshd,authentication_failed,">
-  <rule id="100101" level="10" frequency="3" timeframe="120">
-    <if_matched_sid>5760</if_matched_sid>
-    <same_source_ip />
-    <description>Multiple SSH login failures observed from the same source IP</description>
-    <mitre>
-      <id>T1110</id>
-    </mitre>
-    <group>authentication_failed,ssh_bruteforce,credential_access,</group>
-  </rule>
-</group>
-```
-
 **How the rule works:**
 
 - Wazuh first identifies SSH authentication failures matching the built-in rule ID `5760`.
@@ -326,9 +310,9 @@ I created a custom rule in Wazuh's `local_rules.xml` configuration file.
 
 This allows me to correlate individual failed logins into a higher-level detection rather than treating each authentication failure as an isolated event.
 
-![Custom Wazuh detection rule](03-fim-and-detection/5.png)
+![Custom Wazuh detection rule](03-fim-and-detection/7.png)
 
-### 4. Simulating SSH Brute-Force Activity and Validating Detection
+### 4. Simulating SSH Brute-Force Activity, Validating Detection and Response capability
 
 With the custom rule configured, I returned to the Windows machine to simulate repeated SSH authentication failures against the Ubuntu endpoint (`192.168.160.138`).
 
@@ -336,7 +320,7 @@ Using Windows PowerShell, I attempted multiple SSH connections to the Linux mach
 
 As expected, the SSH server rejected the authentication attempts and returned multiple `Permission denied` messages.
 
-![SSH brute-force simulation from Windows](03-fim-and-detection/6.png)
+![SSH brute-force simulation from Windows](03-fim-and-detection/9.png)
 
 **Detection in Wazuh**
 
@@ -354,7 +338,7 @@ Shortly afterward, Wazuh's Active Response module executed the `firewall-drop` s
 
 This confirmed that the suspicious authentication activity was not only detected but also triggered an automated response.
 
-![Wazuh SSH brute-force detection and Active Response](03-fim-and-detection/7.png)
+![Wazuh SSH brute-force detection and Active Response](03-fim-and-detection/8.png)
 
 ### 5. Verifying the Automated IP Block
 
@@ -370,7 +354,7 @@ The source IP address of the Windows machine (`192.168.160.136`) appeared in the
 
 This confirmed that the `firewall-drop` script had successfully modified the endpoint's firewall configuration to block traffic from the offending IP.
 
-![iptables rules showing the blocked source IP](03-fim-and-detection/8.png)
+![iptables rules showing the blocked source IP](03-fim-and-detection/10.png)
 
 **Cleaning Up the Environment**
 
@@ -380,10 +364,6 @@ After verifying the automated response, I manually removed the temporary firewal
 sudo iptables -D INPUT 1
 sudo iptables -D FORWARD 1
 ```
-
-I performed a final check to confirm that the temporary blocking rules had been removed.
-
-![Firewall rules after cleanup](03-fim-and-detection/9.png)
 
 ### Why It Matters
 
