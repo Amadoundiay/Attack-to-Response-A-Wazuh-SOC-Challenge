@@ -340,6 +340,8 @@ This confirmed that the suspicious authentication activity was not only detected
 
 ![Wazuh SSH brute-force detection and Active Response](03-fim-and-detection/8.png)
 
+![iptables rules showing the blocked source IP](03-fim-and-detection/10.png)
+
 ### 5. Verifying the Automated IP Block
 
 To make sure the response was actually applied, I accessed the Ubuntu endpoint and inspected its firewall rules:
@@ -354,7 +356,7 @@ The source IP address of the Windows machine (`192.168.160.136`) appeared in the
 
 This confirmed that the `firewall-drop` script had successfully modified the endpoint's firewall configuration to block traffic from the offending IP.
 
-![iptables rules showing the blocked source IP](03-fim-and-detection/10.png)
+![iptables rules showing the blocked source IP](03-fim-and-detection/12.png)
 
 **Cleaning Up the Environment**
 
@@ -379,8 +381,103 @@ The result is a basic detection and response workflow in which suspicious authen
 
 In the next phase, I explore Command and Control (C2) activity and how endpoint telemetry can help identify suspicious attacker behavior beyond authentication events.
 
-### Phase 4: C2 Setup
-Command and control setup and detection.
+## Phase 4: Command and Control (C2) Setup and Detection
+
+After implementing FIM, custom detection rules, and automated response, I moved on to simulating a more advanced attack scenario involving Command and Control (C2) activity.
+
+The objective was to simulate how an attacker can establish a remote connection to a compromised endpoint, execute commands remotely, perform post-exploitation activities, and attempt to maintain access to the system.
+
+For this phase, I used Metasploit to establish reverse TCP Meterpreter sessions against the Windows and Linux environments and used Wazuh with Sysmon telemetry to observe the activities performed on the Windows endpoint.
+
+> **Screenshots:** All captures for this phase are stored in `04-c2-setup/`, named `1.png` through `5.png`.
+
+### 1. Generating Reverse TCP Payloads
+
+I started by generating reverse TCP Meterpreter payloads on the Kali Linux attacker machine.
+
+The objective was to prepare executable payloads for the Windows and Linux endpoints. When executed on a target, each payload attempts to establish an outbound connection back to the attacker's machine.
+
+This simulates the establishment of an initial Command and Control channel, allowing the attacker to interact remotely with a compromised endpoint.
+
+![Reverse TCP payload generation](04-c2-setup/1.png)
+
+### 2. Establishing a C2 Connection
+
+After generating the payloads, I configured Metasploit to listen for incoming connections using the `multi/handler` module.
+
+I configured the handler with the corresponding payload and the attacker's IP address, then started the listener.
+
+Once the Windows payload was executed on the target machine, a Meterpreter session was successfully established.
+
+This provided a remote interactive shell through which I could execute commands and interact with the compromised system.
+
+I then performed initial reconnaissance to identify the compromised user context and inspect running processes.
+
+![Metasploit handler and established Meterpreter session](04-c2-setup/2.png)
+
+### 3. Post-Exploitation: Privilege Escalation and Persistence
+
+With the Meterpreter session established, I moved on to simulating common post-exploitation activities on the Windows endpoint.
+
+The objective was to demonstrate how an attacker with remote access might attempt to obtain elevated privileges and maintain access to a compromised machine.
+
+I used a PowerShell session to perform the following actions:
+
+- **System reconnaissance:** Inspected the network configuration to understand the compromised machine's environment.
+- **Account creation:** Created a new local account named `attacker`.
+- **Privilege escalation:** Added the newly created account to the local Administrators group.
+- **Registry-based persistence:** Created a registry Run key under `HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Run`.
+
+For the persistence test, I configured the registry entry to launch `calc.exe` at user logon. This was used as a benign executable to demonstrate the persistence mechanism without deploying another malicious program.
+
+These activities simulate techniques an attacker could use after obtaining an initial foothold, particularly account manipulation, privilege escalation, and registry-based persistence.
+
+![Windows post-exploitation activities](04-c2-setup/3.png)
+
+### 4. Investigating Process Creation Events in Wazuh
+
+After performing the post-exploitation activities, I moved to the Wazuh dashboard to investigate the telemetry generated on the Windows endpoint.
+
+Using Sysmon process creation events, I examined the execution of the commands performed during the previous step.
+
+The objective was to understand not only which commands were executed, but also how they were launched and which processes were responsible for initiating them.
+
+By examining the process execution chain, I could trace the activity from the original payload to the commands executed during the post-exploitation phase.
+
+This provides useful context for identifying suspicious process relationships and understanding how an attacker interacts with a compromised endpoint.
+
+![Wazuh process creation telemetry](04-c2-setup/4.png)
+
+### 5. Investigating Command-Line Activity and Registry Modifications
+
+I then examined the detailed event fields collected by Wazuh to investigate the command-line arguments and registry modifications associated with the attack simulation.
+
+Command-line telemetry is particularly valuable during incident investigations because it provides additional context about what a process was instructed to do.
+
+I focused on two important activities:
+
+- **Account manipulation:** Investigated the command-line events associated with creating the local account and adding it to the Administrators group.
+- **Registry modification:** Examined the registry command used to create the Run key responsible for launching the executable at user logon.
+
+By correlating process creation events with their command-line arguments and process metadata, I could reconstruct important parts of the attack sequence and identify the actions performed after the initial compromise.
+
+![Wazuh command-line and registry modification telemetry](04-c2-setup/5.png)
+
+### Why It Matters
+
+This phase allowed me to simulate and investigate activities that occur after an attacker gains initial access to an endpoint.
+
+It demonstrated several important aspects of endpoint investigation:
+
+1. **Command and Control:** Establishing a remote interactive session between an attacker machine and a compromised endpoint.
+2. **Post-Exploitation:** Performing reconnaissance and manipulating local accounts to obtain administrative privileges.
+3. **Persistence:** Modifying the Windows Registry to maintain execution across user logons.
+4. **Endpoint Visibility:** Using Wazuh and Sysmon telemetry to investigate process creation, command-line execution, and registry modifications.
+5. **Attack Reconstruction:** Following process relationships and event details to understand the sequence of activities performed on the compromised machine.
+
+Most importantly, this phase demonstrates why collecting endpoint telemetry is essential for incident response. Detecting an initial suspicious connection is useful, but understanding what happened afterward is equally important when investigating a compromised system.
+
+The next phase focuses on integrating Wazuh with Tines to build a SOAR workflow that enriches security alerts, notifies an analyst, and automates response actions with human approval.
 
 ### Phase 5: SOAR with Tines
 Wazuh sends rule 100101 alerts to Tines through a custom integration. Tines enriches the source IP with AbuseIPDB and VirusTotal, gets a block recommendation from an AI agent, and posts the evidence to Slack. The Wazuh API blocks the attacker only after the analyst approves.
