@@ -614,15 +614,21 @@ The output shows DROP rules for source IP `192.168.160.136` in both the **INPUT*
 
 This confirms that the source IP was added to the firewall blocking rules following the approved Active Response.
 
-### Why this matters
+### Why It Matters
+This phase demonstrates how I integrated SIEM detection with automated investigation, threat intelligence, analyst notification, and response orchestration.
 
-This phase demonstrates how I integrated detection, investigation, collaboration, analyst approval, and automated containment into a single SOC workflow.
+The implementation brings together several important SOC capabilities:
+1. Alert Orchestration: Forwarding Wazuh security alerts to Tines through a custom webhook integration.
+2. AI-Assisted Investigation: Using an AI agent to analyze alert data and generate structured SOC triage reports.
+3. Threat Intelligence Enrichment: Integrating AbuseIPDB and VirusTotal to provide additional context about suspicious indicators.
+4. Analyst Collaboration: Sending investigation reports to Slack and providing a dedicated approval page.
+5. Human-in-the-Loop Response: Requiring analyst approval before executing a containment action.
+6. Automated Containment: Using the Wazuh API to trigger firewall-based IP blocking through Active Response.
+The result is an end-to-end SOAR workflow that connects detection, investigation, decision-making, and response.
 
-The complete process is:
+Rather than automatically blocking every suspicious IP address, the workflow gives the analyst additional context and control over the final action.
 
-**Wazuh Detection → Tines Webhook → AI Investigation → Slack Notification → Analyst Approval → Wazuh Active Response → Firewall Verification**
-
-By combining Wazuh, Tines, AI-assisted analysis, Slack, and Wazuh Active Response, I built a human-in-the-loop SOAR workflow that reduces manual investigation steps while keeping the final containment decision under analyst control.
+This completes the main implementation of my Wazuh SOC lab, combining endpoint monitoring, custom detection, automated response, and SOAR orchestration.
 
 
 <p align="center">
