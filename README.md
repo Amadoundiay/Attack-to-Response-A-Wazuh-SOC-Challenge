@@ -1,15 +1,29 @@
-<h1 align="center">Wazuh SOC Lab</h1>
+<h1 align="center"> Wazuh SOC Lab</h1>
+
+<h3 align="center">
+  Automated Detection, Investigation, and Response for Windows and Linux Endpoints
+</h3>
 
 <p align="center">
-  <em>Detecting and responding to attacks on Windows and Linux endpoints with Wazuh, Sysmon, and Tines SOAR</em>
+  <em>Simulated attacks → custom SIEM detection → AI-assisted triage → human approval → automated firewall containment</em>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/SIEM-Wazuh-00A4E4?style=for-the-badge" alt="Wazuh">
-  <img src="https://img.shields.io/badge/Telemetry-Sysmon-0078D4?style=for-the-badge" alt="Sysmon">
+  <img src="https://img.shields.io/badge/SIEM-Wazuh-00A4E4?style=for-the-badge&logo=wazuh&logoColor=white" alt="Wazuh">
+  <img src="https://img.shields.io/badge/Telemetry-Sysmon-0078D4?style=for-the-badge&logo=microsoft&logoColor=white" alt="Sysmon">
   <img src="https://img.shields.io/badge/SOAR-Tines-6C47FF?style=for-the-badge" alt="Tines">
-  <img src="https://img.shields.io/badge/Platform-VMware-607078?style=for-the-badge" alt="VMware">
+  <img src="https://img.shields.io/badge/Alerts-Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack">
+  <img src="https://img.shields.io/badge/Threat_Intel-VirusTotal-394EFF?style=for-the-badge&logo=virustotal&logoColor=white" alt="VirusTotal">
+  <img src="https://img.shields.io/badge/Platform-VMware-607078?style=for-the-badge&logo=vmware&logoColor=white" alt="VMware">
 </p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/MITRE%20ATT%26CK-T1110%20Brute%20Force-red?style=flat-square" alt="MITRE ATT&CK T1110">
+  <img src="https://img.shields.io/badge/Human--in--the--Loop-Analyst%20Approval-success?style=flat-square" alt="Human in the loop">
+  <img src="https://img.shields.io/badge/Status-Complete-brightgreen?style=flat-square" alt="Status complete">
+</p>
+
+---
 
 ---
 
